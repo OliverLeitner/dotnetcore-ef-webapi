@@ -1,41 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 // dbcontext usemysql
 using Microsoft.EntityFrameworkCore;
 
-// using the context of our db
-using DotNetCoreSampleApi.classicmodels;
+// json for the future import
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 namespace DotNetCoreSampleApi
 {
     public class Startup
     {
+        public static string dbConnectionString = ""; // for now...
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
-        }
+            this.Configuration = configuration;
 
+        }
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string DefaultconnectionString = Configuration.GetConnectionString("DefaultConnection");     
-            services.AddDbContext<classicmodelsContext>(option => option.UseMySQL(DefaultconnectionString));
+            // for handling within the app
+            dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddControllers(); // we go here
+            services.AddControllers().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = 
+                    Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            ); // we go here
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DotNetCoreSampleApi", Version = "v1" });
