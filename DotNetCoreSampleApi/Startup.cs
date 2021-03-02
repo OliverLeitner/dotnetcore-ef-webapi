@@ -15,6 +15,9 @@ namespace DotNetCoreSampleApi
     public class Startup
     {
         public static string dbConnectionString = ""; // for now...
+
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             this.Configuration = configuration;
@@ -28,8 +31,18 @@ namespace DotNetCoreSampleApi
             // for handling within the app
             dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
+            // https://docs.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-5.0
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                    builder =>
+                    {
+                        builder.WithOrigins("http://vue.localnet");
+                });
+            });
+
             services.AddControllers().AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = 
+                options.SerializerSettings.ReferenceLoopHandling =
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore
             ); // we go here
             services.AddSwaggerGen(c =>
@@ -50,6 +63,8 @@ namespace DotNetCoreSampleApi
             }*/
 
             // app.UseHttpsRedirection(); // in production...
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseRouting();
 
