@@ -7,8 +7,9 @@ using Microsoft.OpenApi.Models;
 // dbcontext usemysql
 using Microsoft.EntityFrameworkCore;
 
-// json for the future import
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+// compression
+using System.IO.Compression;
+using Microsoft.AspNetCore.ResponseCompression;
 
 namespace DotNetCoreSampleApi
 {
@@ -21,8 +22,8 @@ namespace DotNetCoreSampleApi
         public Startup(IConfiguration configuration)
         {
             this.Configuration = configuration;
-
         }
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -37,8 +38,24 @@ namespace DotNetCoreSampleApi
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins("http://vue.localnet");
-                });
+                        builder.WithOrigins(Configuration.GetValue<string>("CorsList"));
+                    });
+            });
+
+            // Configure Compression level
+            services.Configure<GzipCompressionProviderOptions>(options => 
+                options.Level = CompressionLevel.Optimal
+            );
+
+            services.Configure<BrotliCompressionProviderOptions>(options =>
+                options.Level = CompressionLevel.Optimal
+            );
+
+            // Add Response compression services
+            services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
             });
 
             services.AddControllers().AddNewtonsoftJson(options =>
@@ -63,6 +80,8 @@ namespace DotNetCoreSampleApi
             }*/
 
             // app.UseHttpsRedirection(); // in production...
+
+            app.UseResponseCompression();
 
             app.UseCors(MyAllowSpecificOrigins);
 
