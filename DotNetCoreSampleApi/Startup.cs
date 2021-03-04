@@ -19,11 +19,13 @@ namespace DotNetCoreSampleApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             this.Configuration = configuration;
+            _env = env;
         }
 
+        private readonly IWebHostEnvironment _env;
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -72,12 +74,12 @@ namespace DotNetCoreSampleApi
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // dev only thing, i really dont need this
-            /*if (env.IsDevelopment())
+            if (env.EnvironmentName.Contains("Develop"))
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DotNetCoreSampleApi v1"));
-            }*/
+            }
 
             // app.UseHttpsRedirection(); // in production...
 

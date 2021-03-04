@@ -18,6 +18,7 @@ public enum Types {
 namespace DotNetCoreSampleApi.Controllers
 {
     [ApiController]
+    [Produces("application/json")]
     [Route("[controller]")]
     public class CustomerController : ControllerBase
     {
