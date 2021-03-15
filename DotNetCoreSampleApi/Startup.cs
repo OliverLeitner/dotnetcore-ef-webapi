@@ -4,12 +4,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.IdentityModel.Tokens.Jwt;
+
 // dbcontext usemysql
 using Microsoft.EntityFrameworkCore;
 
 // compression
 using System.IO.Compression;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.IdentityModel.Tokens;
+
+using System.Text;
 
 namespace DotNetCoreSampleApi
 {
@@ -68,6 +74,21 @@ namespace DotNetCoreSampleApi
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DotNetCoreSampleApi", Version = "v1" });
             });
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)    
+            .AddJwtBearer(options =>    
+            {    
+                options.TokenValidationParameters = new TokenValidationParameters    
+                {   
+                    ValidateIssuer = true,    
+                    ValidateAudience = true,    
+                    ValidateLifetime = true,    
+                    ValidateIssuerSigningKey = true,    
+                    ValidIssuer = Configuration["JwtAuth:Issuer"],    
+                    ValidAudience = Configuration["JwtAuth:Issuer"],    
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtAuth:Key"]))    
+                };    
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,6 +109,8 @@ namespace DotNetCoreSampleApi
             app.UseCors(MyAllowSpecificOrigins);
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

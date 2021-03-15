@@ -23,6 +23,7 @@ namespace DotNetCoreSampleApi.classicmodels
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<Productline> Productlines { get; set; }
+        public virtual DbSet<Token> Tokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -426,6 +427,27 @@ namespace DotNetCoreSampleApi.classicmodels
                     .HasMaxLength(4000)
                     .HasColumnName("textDescription")
                     .HasDefaultValueSql("'NULL'");
+            });
+
+            modelBuilder.Entity<Token>(entity =>
+            {
+                entity.HasKey(e => new { e.user_id, e.user_name })
+                    .HasName("PRIMARY");
+
+                entity.ToTable("tokens");
+
+                entity.Property(e => e.user_id)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("user_id");
+
+                entity.Property(e => e.user_name)
+                    .HasMaxLength(50)
+                    .HasColumnName("user_name");
+
+                entity.Property(e => e.user_email)
+                    .HasMaxLength(30)
+                    .HasColumnName("user_email");
+
             });
 
             OnModelCreatingPartial(modelBuilder);

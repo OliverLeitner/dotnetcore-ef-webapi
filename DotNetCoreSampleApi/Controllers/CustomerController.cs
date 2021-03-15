@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using DotNetCoreSampleApi.classicmodels;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 public enum Types {
     Customer = 0,
@@ -20,13 +25,14 @@ namespace DotNetCoreSampleApi.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("[controller]")]
-    public class CustomerController : ControllerBase
+    public class CustomerController: ControllerBase
     {
         private readonly ILogger<CustomerController> _logger;
-
-        public CustomerController(ILogger<CustomerController> logger)
+        private IConfiguration _config;
+        public CustomerController(ILogger<CustomerController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
         }
 
         [HttpGet("/GetAllItems", Name = "GetAllItems")]
@@ -62,6 +68,18 @@ namespace DotNetCoreSampleApi.Controllers
                 if (item == null)
                     return null;
                 return item;
+            }
+        }
+
+        [HttpPost("/CreateCustomer")]
+        [Authorize]
+        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        {
+            using (var context = new classicmodelsContext())
+            {
+                context.Customers.Add(customer);
+                await context.SaveChangesAsync();
+                return CreatedAtAction(nameof(PostCustomer), new { id = customer.CustomerNumber }, customer);
             }
         }
     }
